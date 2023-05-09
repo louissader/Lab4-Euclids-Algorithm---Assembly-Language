@@ -1,0 +1,63 @@
+# COMSC210 - Euclid Algorithm - Iterative
+# 5/2023
+# Louis Sader 
+# Based on programs posted by Mike Dank at https://github.com/Famicoman/Euclidean-MIPS
+
+# This program is modular and uses a main program with function calls
+# Programming exercise: Add program documentation to show the Pseudocode for Euclids Algotithm and the Registers that will be used
+
+############ Data Section #######################
+
+.data              # Assembly Language programs have two sections:
+                  # 1)  'data' section is used for declaring data such as strings and arrays
+                  # 2)  'text' section contains the program instructions
+
+# This is the data section 
+
+prompt1:           # Prompt for first integer 'a'
+    .asciiz "Enter the first integer: "   # Assembly directive used to create a null terminated ASCII string
+
+prompt2:           # Prompt for second integer 'b'
+    .asciiz "Enter the second integer: "   # Assembly directive used to create a null terminated ASCII string
+
+result:            # Display string for result GCD 'c'
+    .asciiz "the GCD is:  "   # Assembly directive used to create a null terminated ASCII string
+
+########## Text (Code) Section ##################
+
+.text              # Assembly Language programs have two sections 'data' and 'text'
+.globl  main       # This is the 'text' section which contains program instructions
+
+# The main function calls the euclid function to compute the GCD of two integers
+
+main:               # assembly label
+    sub $sp, $sp, 8 # push stack to save registers needed by the system code that called main
+    sw $ra, 0($sp)  # save return address
+
+    jal get_input   # Call get_input to read integers from console
+    move $a0, $v0   # Move integer a to $a0
+    jal get_input   # Call get_input to read integers from console
+    move $a1, $v0   # Move integer b to $a1
+    jal euclid      # Call euclid to compute the GCD of a and b
+    sw $v0, 4($sp)  # result returned in $v0 and stored on the stack
+
+    # print the result 
+    li $v0, 4           # the argument to a system call is placed in register $v0
+                        # The value 4 tells syscall to print a string
+    la $a0, result      # pseudo-instruction to load the address of the label str
+                        # The address of the string must be placed in register $a0
+    syscall             # system call to print the string at address str
+
+    li $v0, 1           # The value 1 tells syscall to print an integer
+    lw $a0, 4($sp)      # Load the sum from the stack to register $a0 
+    syscall             # System call to print the integer in register $a0
+
+    lw $ra, 0($sp)      # restore return address used to jump back to system
+    add $sp, $sp, 8     # pop stack to prepare for the return to the system
+    j halt              # [jump register] return to the system 
+
+# get_input function reads an integer from console
+# and returns it in register $v0
+get_input:
+    li $v0, 4           # Ready for string output
+    jal prompt_a
